@@ -372,6 +372,10 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
     SOURCE ${PROJECT_SOURCE_DIR}/src/oc/code.cpp
     APPEND
     PROPERTY COMPILE_OPTIONS -O1)
+  set_property(
+    SOURCE ${PROJECT_SOURCE_DIR}/src/nrnoc/treeset.cpp
+    APPEND
+    PROPERTY COMPILE_OPTIONS -O1)
 endif()
 
 if(NRN_ENABLE_MPI_DYNAMIC)
