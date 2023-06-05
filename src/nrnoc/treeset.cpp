@@ -2239,8 +2239,8 @@ void nrn_recalc_node_ptrs(void) {
             }
             dpend = nrn_dparam_ptr_end_[p->_type];
             for (j = nrn_dparam_ptr_start_[p->_type]; j < dpend; ++j) {
-                double* pval = p->dparam[j].get<double*>();
-                if (pval && *pval >= 0.0 && *pval <= recalc_cnt_) {
+                if (double* pval = p->dparam[j].get<double*>();
+                    pval && *pval >= 0.0 && *pval <= recalc_cnt_) {
                     /* possible pointer to v */
                     k = (int) (*pval);
                     if (pval == recalc_ptr_old_vp_[k]) {
