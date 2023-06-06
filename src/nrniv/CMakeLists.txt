@@ -361,6 +361,10 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "IntelLLVM")
     SOURCE ${PROJECT_SOURCE_DIR}/src/oc/math.cpp
     APPEND
     PROPERTY COMPILE_OPTIONS "-fp-model=strict" "-fno-math-errno")
+  set_property(
+    SOURCE ${PROJECT_SOURCE_DIR}/src/nrnoc/treeset.cpp
+    APPEND
+    PROPERTY COMPILE_OPTIONS -O1)
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
   # When optimisation is enabled then icpc apparently does not set errno
   set_property(
@@ -372,9 +376,6 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
     SOURCE ${PROJECT_SOURCE_DIR}/src/oc/code.cpp
     APPEND
     PROPERTY COMPILE_OPTIONS -O1)
-  set_property(
-    SOURCE ${PROJECT_SOURCE_DIR}/src/nrnoc/treeset.cpp
-    PROPERTY COMPILE_OPTIONS "-g -O1")
 endif()
 
 if(NRN_ENABLE_MPI_DYNAMIC)
