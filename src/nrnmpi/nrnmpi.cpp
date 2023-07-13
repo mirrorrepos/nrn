@@ -185,9 +185,7 @@ double nrnmpi_wtime() {
 void nrnmpi_terminate() {
 #if NRNMPI
     if (nrnmpi_use) {
-#if 0
                 printf("%d nrnmpi_terminate\n", nrnmpi_myid_world);
-#endif
 #if USE_HPM
         hpmTerminate(nrnmpi_myid_world);
 #endif
@@ -198,6 +196,8 @@ void nrnmpi_terminate() {
             } else
 #endif
                 MPI_Finalize();
+        } else {
+            printf("%d nrnmpi_under_nrncontrol_\n", nrnmpi_under_nrncontrol_);
         }
         nrnmpi_use = 0;
 #if nrnmpidebugleak
