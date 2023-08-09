@@ -157,3 +157,13 @@ std::unique_ptr<storage_info> find_container_info(void const* c) {
     return model().find_container_info(c);
 }
 }  // namespace neuron::container::utils
+
+void clear_deferred_deletion_vectors() {
+    if (!ifarg(0)) {
+        hoc_execerror("clear_model doesn't support any arguments.", nullptr);
+    }
+
+    neuron::model().clear_deferred_deletion_vectors();
+
+    hoc_retpushx(1.);
+}
