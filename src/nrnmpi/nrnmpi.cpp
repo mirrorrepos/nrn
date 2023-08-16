@@ -60,7 +60,6 @@ extern "C" void nrnmpi_init(int nrnmpi_under_nrncontrol, int* pargc, char*** par
     }
     nrnmpi_under_nrncontrol_ = nrnmpi_under_nrncontrol;
     if (nrnmpi_under_nrncontrol_) {
-
 #if NRN_MUSIC
         nrnmusic_init(pargc, pargv); /* see src/nrniv/nrnmusic.cpp */
 #endif

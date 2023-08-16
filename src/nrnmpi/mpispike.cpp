@@ -265,14 +265,14 @@ int nrnmpi_int_allmax(int x) {
 /* Code derived from MPI_Alltoallv_sparse in MP-Gadget: https://github.com/MP-Gadget */
 
 static void MPI_Alltoallv_sparse(void* sendbuf,
-                                int* sendcnts,
-                                int* sdispls,
-                                MPI_Datatype sendtype,
-                                void* recvbuf,
-                                int* recvcnts,
-                                int* rdispls,
-                                MPI_Datatype recvtype,
-                                MPI_Comm comm) {
+                                 int* sendcnts,
+                                 int* sdispls,
+                                 MPI_Datatype sendtype,
+                                 void* recvbuf,
+                                 int* recvcnts,
+                                 int* rdispls,
+                                 MPI_Datatype recvtype,
+                                 MPI_Comm comm) {
     int status;
     int myrank;
     int nranks;
@@ -303,12 +303,12 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
         if (recvcnts[target] == 0)
             continue;
         asrt(MPI_Irecv((static_cast<char*>(recvbuf)) + recv_elsize * rdispls[target],
-                           recvcnts[target],
-                           recvtype,
-                           target,
-                           ALLTOALLV_SPARSE_TAG,
-                           comm,
-                           &requests[n_requests++]));
+                       recvcnts[target],
+                       recvtype,
+                       target,
+                       ALLTOALLV_SPARSE_TAG,
+                       comm,
+                       &requests[n_requests++]));
     }
 
     asrt(MPI_Barrier(comm));
@@ -320,12 +320,12 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
         if (sendcnts[target] == 0)
             continue;
         asrt(MPI_Isend((static_cast<char*>(sendbuf)) + send_elsize * sdispls[target],
-                           sendcnts[target],
-                           sendtype,
-                           target,
-                           ALLTOALLV_SPARSE_TAG,
-                           comm,
-                           &requests[n_requests++]));
+                       sendcnts[target],
+                       sendtype,
+                       target,
+                       ALLTOALLV_SPARSE_TAG,
+                       comm,
+                       &requests[n_requests++]));
     }
 
     asrt(MPI_Waitall(n_requests, requests, MPI_STATUSES_IGNORE));
@@ -487,7 +487,7 @@ int nrnmpi_int_sum_reduce(int in) {
 
 void nrnmpi_assert_opstep(int opstep, double t) {
     /* all machines in comm should have same opstep and same t. */
-    double buf[2]{(double)opstep, t};
+    double buf[2]{(double) opstep, t};
     if (nrnmpi_numprocs < 2) {
         return;
     }
@@ -542,7 +542,7 @@ static void pgvts_op(double* in, double* inout, int* len, MPI_Datatype* dptr) {
 }
 
 int nrnmpi_pgvts_least(double* t, int* op, int* init) {
-    double ibuf[4]{*t, (double)(*op), (double)(*init), (double)nrnmpi_myid};
+    double ibuf[4]{*t, (double) (*op), (double) (*init), (double) nrnmpi_myid};
     double obuf[4]{ibuf[0], ibuf[1], ibuf[2], ibuf[3]};
     for (int i = 0; i < 4; ++i) {
         obuf[i] = ibuf[i];
