@@ -25,10 +25,6 @@ extern double nrn_timeus();
 #if NRNMPI
 #include <mpi.h>
 #define asrt(arg) nrn_assert(arg == MPI_SUCCESS)
-#define USE_HPM   0
-#if USE_HPM
-#include <libhpm.h>
-#endif
 
 #if NRN_MUSIC
 #include "nrnmusicapi.h"
@@ -59,20 +55,11 @@ static int nrnmpi_is_setup_;
 
 extern "C" void nrnmpi_init(int nrnmpi_under_nrncontrol, int* pargc, char*** pargv) {
 #if NRNMPI
-    int i, b, flag;
     if (nrnmpi_use) {
         return;
     }
     nrnmpi_under_nrncontrol_ = nrnmpi_under_nrncontrol;
     if (nrnmpi_under_nrncontrol_) {
-#if 0
-{int i;
-printf("nrnmpi_init: argc=%d\n", *pargc);
-for (i=0; i < *pargc; ++i) {
-        printf("%d |%s|\n", i, (*pargv)[i]);
-}
-}
-#endif
 
 #if NRN_MUSIC
         nrnmusic_init(pargc, pargv); /* see src/nrniv/nrnmusic.cpp */
@@ -86,24 +73,24 @@ for (i=0; i < *pargc; ++i) {
            directory and so when not invoked under mpirun we would like to
            NOT call MPI_Init.
         */
-        b = 0;
-        for (i = 0; i < *pargc; ++i) {
+        bool b = false;
+        for (int i = 0; i < *pargc; ++i) {
             if (strncmp("-p4", (*pargv)[i], 3) == 0) {
-                b = 1;
+                b = true;
                 break;
             }
             if (strcmp("-mpi", (*pargv)[i]) == 0) {
-                b = 1;
+                b = true;
                 break;
             }
         }
         if (nrnmpi_under_nrncontrol_ == 2) {
-            b = 1;
+            b = true;
             nrnmpi_under_nrncontrol_ = 1;
         }
 #if NRN_MUSIC
         if (nrnmusic) {
-            b = 1;
+            b = true;
         }
 #endif
         if (!b) {
@@ -111,6 +98,7 @@ for (i=0; i < *pargc; ++i) {
             return;
         }
 #endif
+        int flag;
         MPI_Initialized(&flag);
 
         /* only call MPI_Init if not already initialized */
@@ -157,22 +145,9 @@ for (i=0; i < *pargc; ++i) {
     nrnmpi_numprocs_subworld = nrnmpi_numprocs_bbs;  // Size of subworld of current rank
 
     /*begin instrumentation*/
-#if USE_HPM
-    hpmInit(nrnmpi_myid_world, "mpineuron");
-#endif
-#if 0
-{int i;
-printf("nrnmpi_init: argc=%d\n", *pargc);
-for (i=0; i < *pargc; ++i) {
-        printf("%d |%s|\n", i, (*pargv)[i]);
-}
-}
-#endif
-#if 1
     if (nrnmpi_myid == 0) {
         printf("numprocs=%d\n", nrnmpi_numprocs_world);
     }
-#endif
 
 #endif /* NRNMPI */
 }
@@ -189,12 +164,6 @@ double nrnmpi_wtime() {
 void nrnmpi_terminate() {
 #if NRNMPI
     if (nrnmpi_use) {
-#if 0
-                printf("%d nrnmpi_terminate\n", nrnmpi_myid_world);
-#endif
-#if USE_HPM
-        hpmTerminate(nrnmpi_myid_world);
-#endif
         if (nrnmpi_under_nrncontrol_) {
 #if NRN_MUSIC
             if (nrnmusic) {
@@ -286,14 +255,13 @@ void nrnmpi_subworld_size(int n) {
     } else {
         int nw = nrnmpi_numprocs_world;
         int nb = nw / n; /* nrnmpi_numprocs_bbs */
-        int ib;
         int range[3];
         if (nw % n) {
             nb += 1; /* and the last will have pc.nhost = nw%n */
         }
         /* A subworld (net) has contiguous ranks. */
         /* Every rank is in a specific nrnmpi_comm communicator */
-        ib = r / n;
+        int ib = r / n;
         range[0] = ib * n;           /* first rank in group */
         range[1] = range[0] + n - 1; /* last rank in group */
         if (range[1] >= nw) {

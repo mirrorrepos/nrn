@@ -22,9 +22,6 @@
 #include <nrnmpi_impl.h>
 #include <hocdec.h>
 
-#if 0
-#define guard(f) nrn_assert(f == MPI_SUCCESS)
-#else
 #define guard(f)                       \
     {                                  \
         int _i = f;                    \
@@ -33,7 +30,6 @@
             assert(0);                 \
         }                              \
     }
-#endif
 
 #define nrnmpidebugleak 0
 #define debug           0
@@ -145,13 +141,12 @@ char* nrnmpi_getkey(bbsmpibuf* r) {
 }
 
 int nrnmpi_getid(bbsmpibuf* r) {
-    int i, type;
-    type = r->upkpos;
+    int type = r->upkpos;
     r->upkpos = r->keypos;
 #if debug
     printf("%d nrnmpi_getid %p keypos=%d\n", nrnmpi_myid_bbs, r, r->keypos);
 #endif
-    i = nrnmpi_upkint(r);
+    int i = nrnmpi_upkint(r);
     r->upkpos = type;
 #if debug
     printf("getid return %d\n", i);
@@ -185,12 +180,11 @@ char* (*p_cxx_char_alloc)(int len);
 
 char* nrnmpi_upkstr(bbsmpibuf* r) {
     int len;
-    char* s;
     unpack(&len, 1, my_MPI_INT, r, "upkstr length");
 #if NRNMPI_DYNAMICLOAD
-    s = (*p_cxx_char_alloc)(len + 1); /* will be delete not free */
+    char* s = (*p_cxx_char_alloc)(len + 1); /* will be delete not free */
 #else
-    s = cxx_char_alloc(len + 1); /* will be delete not free */
+    char* s = cxx_char_alloc(len + 1); /* will be delete not free */
 #endif
     unpack(s, len, my_MPI_CHAR, r, "upkstr string");
     s[len] = '\0';
@@ -199,22 +193,20 @@ char* nrnmpi_upkstr(bbsmpibuf* r) {
 
 char* nrnmpi_upkpickle(size_t* size, bbsmpibuf* r) {
     int len;
-    char* s;
     unpack(&len, 1, my_MPI_INT, r, "upkpickle length");
     *size = len;
 #if NRNMPI_DYNAMICLOAD
-    s = (*p_cxx_char_alloc)(len + 1); /* will be delete not free */
+    char* s = (*p_cxx_char_alloc)(len + 1); /* will be delete not free */
 #else
-    s = cxx_char_alloc(len + 1); /* will be delete, not free */
+    char* s = cxx_char_alloc(len + 1); /* will be delete, not free */
 #endif
     unpack(s, len, my_MPI_PICKLE, r, "upkpickle data");
     return s;
 }
 
 static void resize(bbsmpibuf* r, int size) {
-    int newsize;
     if (r->size < size) {
-        newsize = (size / 64) * 64 + 128;
+        int newsize = (size / 64) * 64 + 128;
         r->buf = static_cast<char*>(hoc_Erealloc(r->buf, newsize));
         hoc_malchk();
         r->size = newsize;
@@ -222,12 +214,11 @@ static void resize(bbsmpibuf* r, int size) {
 }
 
 void nrnmpi_pkbegin(bbsmpibuf* r) {
-    int type;
     if (nrnmpi_myid_bbs == -1) {
         hoc_execerror("subworld process with nhost > 0 cannot use", "the bulletin board");
     }
     r->pkposition = 0;
-    type = 0;
+    int type = 0;
 #if debug
     printf(
         "%d nrnmpi_pkbegin %p size=%d pkposition=%d\n", nrnmpi_myid_bbs, r, r->size, r->pkposition);
@@ -236,14 +227,14 @@ void nrnmpi_pkbegin(bbsmpibuf* r) {
 }
 
 void nrnmpi_enddata(bbsmpibuf* r) {
-    int p, type, isize, oldsize;
-    p = r->pkposition;
-    type = 0;
+    int isize;
+    int p = r->pkposition;
+    int type = 0;
 #if debug
     printf("%d nrnmpi_enddata %p size=%d pkposition=%d\n", nrnmpi_myid_bbs, r, r->size, p);
 #endif
     guard(MPI_Pack_size(1, MPI_INT, nrn_bbs_comm, &isize));
-    oldsize = r->size;
+    int oldsize = r->size;
     resize(r, r->pkposition + isize);
 #if debug
     if (oldsize < r->pkposition + isize) {
@@ -268,7 +259,6 @@ void nrnmpi_enddata(bbsmpibuf* r) {
 }
 
 static void pack(void* inbuf, int incount, int my_datatype, bbsmpibuf* r, const char* e) {
-    int type[2];
     int dsize, isize, oldsize;
 #if debug
     printf("%d pack %p count=%d type=%d outbuf-%p pkposition=%d %s\n",
@@ -293,8 +283,7 @@ static void pack(void* inbuf, int incount, int my_datatype, bbsmpibuf* r, const 
                r->size);
     }
 #endif
-    type[0] = my_datatype;
-    type[1] = incount;
+    int type[2]{my_datatype, incount};
     guard(MPI_Pack(type, 2, MPI_INT, r->buf, r->size, &r->pkposition, nrn_bbs_comm));
     guard(MPI_Pack(
         inbuf, incount, mytypes[my_datatype], r->buf, r->size, &r->pkposition, nrn_bbs_comm));
@@ -304,14 +293,12 @@ static void pack(void* inbuf, int incount, int my_datatype, bbsmpibuf* r, const 
 }
 
 void nrnmpi_pkint(int i, bbsmpibuf* r) {
-    int ii;
-    ii = i;
+    int ii = i;
     pack(&ii, 1, my_MPI_INT, r, "pkint");
 }
 
 void nrnmpi_pkdouble(double x, bbsmpibuf* r) {
-    double xx;
-    xx = x;
+    double xx = x;
     pack(&xx, 1, my_MPI_DOUBLE, r, "pkdouble");
 }
 
@@ -320,8 +307,7 @@ void nrnmpi_pkvec(int n, double* x, bbsmpibuf* r) {
 }
 
 void nrnmpi_pkstr(const char* s, bbsmpibuf* r) {
-    int len;
-    len = strlen(s);
+    int len = strlen(s);
     pack(&len, 1, my_MPI_INT, r, "pkstr length");
     pack((char*) s, len, my_MPI_CHAR, r, "pkstr string");
 }
@@ -410,8 +396,6 @@ int nrnmpi_bbsrecv(int source, bbsmpibuf* r) {
 
 int nrnmpi_bbssendrecv(int dest, int tag, bbsmpibuf* s, bbsmpibuf* r) {
     int size, itag, source;
-    int msgtag;
-    MPI_Status status;
 #if debug
     printf("%d nrnmpi_bbssendrecv dest=%d tag=%d\n", nrnmpi_myid_bbs, dest, tag);
 #endif
@@ -452,8 +436,7 @@ void nrnmpi_probe(int* size, int* tag, int* source) {
 }
 
 bbsmpibuf* nrnmpi_newbuf(int size) {
-    bbsmpibuf* buf;
-    buf = (bbsmpibuf*) hoc_Emalloc(sizeof(bbsmpibuf));
+    bbsmpibuf* buf = (bbsmpibuf*) hoc_Emalloc(sizeof(bbsmpibuf));
     hoc_malchk();
 #if debug
     printf("%d nrnmpi_newbuf %p\n", nrnmpi_myid_bbs, buf);
@@ -475,9 +458,8 @@ bbsmpibuf* nrnmpi_newbuf(int size) {
 }
 
 void nrnmpi_copy(bbsmpibuf* dest, bbsmpibuf* src) {
-    int i;
     resize(dest, src->size);
-    for (i = 0; i < src->size; ++i) {
+    for (int i = 0; i < src->size; ++i) {
         dest->buf[i] = src->buf[i];
     }
     dest->pkposition = src->pkposition;
