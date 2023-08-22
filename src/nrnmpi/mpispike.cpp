@@ -303,12 +303,12 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
         if (recvcnts[target] == 0)
             continue;
         nrn_mpi_assert(MPI_Irecv((static_cast<char*>(recvbuf)) + recv_elsize * rdispls[target],
-                       recvcnts[target],
-                       recvtype,
-                       target,
-                       ALLTOALLV_SPARSE_TAG,
-                       comm,
-                       &requests[n_requests++]));
+                                 recvcnts[target],
+                                 recvtype,
+                                 target,
+                                 ALLTOALLV_SPARSE_TAG,
+                                 comm,
+                                 &requests[n_requests++]));
     }
 
     nrn_mpi_assert(MPI_Barrier(comm));
@@ -320,12 +320,12 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
         if (sendcnts[target] == 0)
             continue;
         nrn_mpi_assert(MPI_Isend((static_cast<char*>(sendbuf)) + send_elsize * sdispls[target],
-                       sendcnts[target],
-                       sendtype,
-                       target,
-                       ALLTOALLV_SPARSE_TAG,
-                       comm,
-                       &requests[n_requests++]));
+                                 sendcnts[target],
+                                 sendtype,
+                                 target,
+                                 ALLTOALLV_SPARSE_TAG,
+                                 comm,
+                                 &requests[n_requests++]));
     }
 
     nrn_mpi_assert(MPI_Waitall(n_requests, requests, MPI_STATUSES_IGNORE));

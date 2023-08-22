@@ -84,7 +84,8 @@ static void unpack(void* buf, int count, int my_datatype, bbsmpibuf* r, const ch
     }
     assert(type[0] == my_datatype);
     assert(type[1] == count);
-    nrn_mpi_assert(MPI_Unpack(r->buf, r->size, &r->upkpos, buf, count, mytypes[my_datatype], nrn_bbs_comm));
+    nrn_mpi_assert(
+        MPI_Unpack(r->buf, r->size, &r->upkpos, buf, count, mytypes[my_datatype], nrn_bbs_comm));
 }
 
 void nrnmpi_upkbegin(bbsmpibuf* r) {
@@ -367,7 +368,8 @@ int nrnmpi_bbsrecv(int source, bbsmpibuf* r) {
            status.MPI_TAG);
 #endif
     resize(r, size);
-    nrn_mpi_assert(MPI_Recv(r->buf, r->size, MPI_PACKED, source, MPI_ANY_TAG, nrn_bbs_comm, &status));
+    nrn_mpi_assert(
+        MPI_Recv(r->buf, r->size, MPI_PACKED, source, MPI_ANY_TAG, nrn_bbs_comm, &status));
     errno = 0;
     /* Some MPI implementations limit tags to be less than full MPI_INT domain
        In the past we allowed  TODO mesages to have tags > 20 (FIRSTID of src/parallel/bbssrv.h)
