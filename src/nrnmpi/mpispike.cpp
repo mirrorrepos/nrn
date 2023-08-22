@@ -23,7 +23,7 @@
 #include <limits>
 #include <string>
 
-#define asrt(arg) nrn_assert(arg == MPI_SUCCESS)
+#define nrn_mpi_assert(arg) nrn_assert(arg == MPI_SUCCESS)
 
 extern void nrnbbs_context_wait();
 
@@ -276,8 +276,8 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
     int status;
     int myrank;
     int nranks;
-    asrt(MPI_Comm_rank(comm, &myrank));
-    asrt(MPI_Comm_size(comm, &nranks));
+    nrn_mpi_assert(MPI_Comm_rank(comm, &myrank));
+    nrn_mpi_assert(MPI_Comm_size(comm, &nranks));
 
     int rankp;
     for (rankp = 0; nranks > (1 << rankp); rankp++)
@@ -287,8 +287,8 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
     ptrdiff_t send_elsize;
     ptrdiff_t recv_elsize;
 
-    asrt(MPI_Type_get_extent(sendtype, &lb, &send_elsize));
-    asrt(MPI_Type_get_extent(recvtype, &lb, &recv_elsize));
+    nrn_mpi_assert(MPI_Type_get_extent(sendtype, &lb, &send_elsize));
+    nrn_mpi_assert(MPI_Type_get_extent(recvtype, &lb, &recv_elsize));
 
     MPI_Request* requests = (MPI_Request*) hoc_Emalloc(nranks * 2 * sizeof(MPI_Request));
     hoc_malchk();
@@ -302,7 +302,7 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
             continue;
         if (recvcnts[target] == 0)
             continue;
-        asrt(MPI_Irecv((static_cast<char*>(recvbuf)) + recv_elsize * rdispls[target],
+        nrn_mpi_assert(MPI_Irecv((static_cast<char*>(recvbuf)) + recv_elsize * rdispls[target],
                        recvcnts[target],
                        recvtype,
                        target,
@@ -311,7 +311,7 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
                        &requests[n_requests++]));
     }
 
-    asrt(MPI_Barrier(comm));
+    nrn_mpi_assert(MPI_Barrier(comm));
 
     for (int ngrp = 0; ngrp < (1 << rankp); ngrp++) {
         int target = myrank ^ ngrp;
@@ -319,7 +319,7 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
             continue;
         if (sendcnts[target] == 0)
             continue;
-        asrt(MPI_Isend((static_cast<char*>(sendbuf)) + send_elsize * sdispls[target],
+        nrn_mpi_assert(MPI_Isend((static_cast<char*>(sendbuf)) + send_elsize * sdispls[target],
                        sendcnts[target],
                        sendtype,
                        target,
@@ -328,10 +328,10 @@ static void MPI_Alltoallv_sparse(void* sendbuf,
                        &requests[n_requests++]));
     }
 
-    asrt(MPI_Waitall(n_requests, requests, MPI_STATUSES_IGNORE));
+    nrn_mpi_assert(MPI_Waitall(n_requests, requests, MPI_STATUSES_IGNORE));
     free(requests);
 
-    asrt(MPI_Barrier(comm));
+    nrn_mpi_assert(MPI_Barrier(comm));
 }
 
 
